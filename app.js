@@ -97,7 +97,7 @@ let db           = null;
 let parsedRows   = [];
 let currentPage  = 1;
 let totalRows    = 0;
-let filters      = { prospect:'', state:'', stage:'', q:'' };
+let filters      = { prospect:'', state:'', stage:'', q:'', dStart:'', dEnd:'' };
 let visibleCols  = [...DEFAULT_COLS];
 let searchTimer  = null;
 let selectedIds  = new Set();   // DB row ids selected for deletion
@@ -374,6 +374,12 @@ async function loadRecords(reset) {
     const s = filters.q;
     q = q.or(`full_name.ilike.%${s}%,phone.ilike.%${s}%,email.ilike.%${s}%,street_address.ilike.%${s}%,city.ilike.%${s}%,contact_id.ilike.%${s}%`);
   }
+  if (filters.dStart) {
+    q = q.gte('imported_at', filters.dStart + 'T00:00:00.000Z');
+  }
+  if (filters.dEnd) {
+    q = q.lte('imported_at', filters.dEnd + 'T23:59:59.999Z');
+  }
   q = q.order('id', { ascending:false }).range(from, to);
 
   const { data, count, error } = await q;
@@ -532,6 +538,9 @@ function showDeleteModal(ids, title) {
   document.getElementById('delete-modal-title').textContent = title;
   document.getElementById('delete-modal-msg').textContent = `This will permanently remove ${ids.length} record${ids.length>1?'s':''} from the database. This cannot be undone.`;
   document.getElementById('delete-modal').style.display = 'flex';
+  document.getElementById('mass-delete-warning').style.display = 'none';
+  document.getElementById('delete-confirm').style.display = 'inline-block';
+  document.getElementById('mass-delete-confirm').style.display = 'none';
 }
 
 document.getElementById('delete-cancel').addEventListener('click', () => {
@@ -558,19 +567,77 @@ document.getElementById('delete-confirm').addEventListener('click', async () => 
   }
 });
 
+// Mass Delete Event
+document.getElementById('mass-delete-btn').addEventListener('click', () => {
+  if (totalRows === 0) return toast('No records to delete', 'info');
+  
+  document.getElementById('delete-modal-title').textContent = 'Confirm Mass Delete';
+  document.getElementById('delete-modal-msg').textContent = `This will permanently remove ${totalRows.toLocaleString()} record${totalRows>1?'s':''} from the database. This cannot be undone.`;
+  document.getElementById('delete-modal').style.display = 'flex';
+  document.getElementById('mass-delete-warning').style.display = 'block';
+  document.getElementById('delete-confirm').style.display = 'none';
+  document.getElementById('mass-delete-confirm').style.display = 'inline-block';
+});
+
+document.getElementById('mass-delete-confirm').addEventListener('click', async () => {
+  document.getElementById('delete-modal').style.display = 'none';
+  const btn = document.getElementById('mass-delete-btn');
+  btn.textContent = 'Deleting...';
+  btn.disabled = true;
+
+  try {
+    let q = db.from(TABLE).delete();
+    let hasFilter = false;
+
+    if (filters.prospect) { q = q.eq('prospect_type', filters.prospect); hasFilter = true; }
+    if (filters.state)    { q = q.eq('state', filters.state); hasFilter = true; }
+    if (filters.stage)    { q = q.eq('marketing_stage', filters.stage); hasFilter = true; }
+    if (filters.dStart)   { q = q.gte('imported_at', filters.dStart + 'T00:00:00.000Z'); hasFilter = true; }
+    if (filters.dEnd)     { q = q.lte('imported_at', filters.dEnd + 'T23:59:59.999Z'); hasFilter = true; }
+    if (filters.q) {
+      const s = filters.q;
+      q = q.or(`full_name.ilike.%${s}%,phone.ilike.%${s}%,email.ilike.%${s}%,street_address.ilike.%${s}%,city.ilike.%${s}%,contact_id.ilike.%${s}%`);
+      hasFilter = true;
+    }
+
+    // Supabase requires a filter when doing multi-row deletes
+    if (!hasFilter) q = q.neq('id', 0);
+
+    const { error } = await q;
+    
+    if (error) {
+      toast('Mass delete failed: ' + error.message, 'error');
+    } else {
+      toast(`Deleted ${totalRows.toLocaleString()} records`, 'success');
+      selectedIds.clear();
+      updateDeleteBtn();
+      loadRecords(true);
+    }
+  } catch (err) {
+    toast('Error: ' + err.message, 'error');
+  } finally {
+    btn.textContent = 'Mass Delete';
+    btn.disabled = false;
+  }
+});
+
 // ─────────────────────────────────────────────
 // FILTER EVENTS
 // ─────────────────────────────────────────────
 document.getElementById('filter-prospect').addEventListener('change', e => { filters.prospect = e.target.value; currentPage=1; loadRecords(); });
 document.getElementById('filter-state').addEventListener('change',    e => { filters.state    = e.target.value; currentPage=1; loadRecords(); });
 document.getElementById('filter-stage').addEventListener('change',    e => { filters.stage    = e.target.value; currentPage=1; loadRecords(); });
+document.getElementById('filter-date-start').addEventListener('change', e => { filters.dStart = e.target.value; currentPage=1; loadRecords(); });
+document.getElementById('filter-date-end').addEventListener('change',   e => { filters.dEnd   = e.target.value; currentPage=1; loadRecords(); });
+
 document.getElementById('search-input').addEventListener('input', e => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => { filters.q = e.target.value.trim(); currentPage=1; loadRecords(); }, 400);
 });
+
 document.getElementById('reset-btn').addEventListener('click', () => {
-  filters = { prospect:'', state:'', stage:'', q:'' };
-  ['filter-prospect','filter-state','filter-stage'].forEach(id => { document.getElementById(id).value = ''; });
+  filters = { prospect:'', state:'', stage:'', q:'', dStart:'', dEnd:'' };
+  ['filter-prospect','filter-state','filter-stage','filter-date-start','filter-date-end'].forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('search-input').value = '';
   currentPage = 1; loadRecords();
 });

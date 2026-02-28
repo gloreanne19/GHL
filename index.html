@@ -173,6 +173,8 @@
           <select id="filter-stage" class="flt-select">
             <option value="">All Stages</option>
           </select>
+          <input type="date" id="filter-date-start" class="flt-select" title="Imported From Date">
+          <input type="date" id="filter-date-end" class="flt-select" title="Imported To Date">
           <button class="btn-secondary" id="reset-btn">Reset</button>
         </div>
 
@@ -184,6 +186,9 @@
               <span id="showing-text" class="muted-sm"></span>
               <button class="btn-danger" id="delete-selected-btn" style="display:none">
                 Delete Selected (<span id="selected-count">0</span>)
+              </button>
+              <button class="btn-danger" id="mass-delete-btn" style="margin-left: 10px; opacity: 0.9;">
+                Mass Delete
               </button>
             </div>
             <div class="toolbar-right">
@@ -214,9 +219,13 @@
     <div class="modal">
       <h2 id="delete-modal-title">Delete Records?</h2>
       <p id="delete-modal-msg">This action cannot be undone.</p>
+      <div id="mass-delete-warning" style="display:none; background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.35); color: #fca5a5; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
+         You are about to delete records matching your current filter. This might take a few moments for large numbers of records.
+      </div>
       <div class="modal-actions">
         <button class="btn-secondary" id="delete-cancel">Cancel</button>
         <button class="btn-danger" id="delete-confirm">Yes, Delete</button>
+        <button class="btn-danger" id="mass-delete-confirm" style="display:none;">Confirm Mass Delete</button>
       </div>
     </div>
   </div>
