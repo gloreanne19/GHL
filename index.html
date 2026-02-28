@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHL All Records</title>
+  <meta name="description" content="GHL All Records — Real estate lead management with Excel import and full database access.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════ LOGIN SCREEN ═══════════════════ -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="login-logo-icon">GHL</div>
+        <h1 class="login-title">GHL ALL Records</h1>
+        <p class="login-sub">Real Estate Lead Database</p>
+      </div>
+      <form class="login-form" id="login-form" autocomplete="off">
+        <div class="field-group">
+          <label class="field-label">Email</label>
+          <input type="email" id="login-email" class="field-input" placeholder="you@example.com" required>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <input type="password" id="login-password" class="field-input" placeholder="••••••••" required>
+        </div>
+        <div class="login-error" id="login-error" style="display:none"></div>
+        <button type="submit" class="btn-primary login-btn" id="login-btn">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ MAIN APP ═══════════════════ -->
+  <div class="app" id="main-app" style="display:none">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">GHL</div>
+        <div>
+          <div class="logo-title">All Records</div>
+          <div class="logo-sub">Lead Database</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-tab="import" id="nav-import">
+          Import Data
+        </button>
+        <button class="nav-item" data-tab="records" id="nav-records">
+          All Records
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Connecting...</span>
+        </div>
+        <button class="logout-btn" id="logout-btn" title="Sign out">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- ── IMPORT TAB ── -->
+      <section class="tab active" id="tab-import">
+        <div class="page-header">
+          <div>
+            <h1>Import Excel Data</h1>
+            <p>Upload your .xlsx / .xls / .csv to add contacts to the database</p>
+          </div>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <div class="drop-icon">+</div>
+          <h3>Drop your file here</h3>
+          <p>or click to browse</p>
+          <span class="drop-hint">.xlsx &nbsp;·&nbsp; .xls &nbsp;·&nbsp; .csv</span>
+          <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden>
+        </div>
+
+        <div class="file-bar" id="file-bar" style="display:none">
+          <div class="file-bar-icon"></div>
+          <div class="file-bar-info">
+            <strong id="file-name"></strong>
+            <span id="file-meta"></span>
+          </div>
+          <button class="icon-btn" id="remove-file" title="Remove file">×</button>
+        </div>
+
+        <div class="card" id="import-options" style="display:none">
+          <h3 class="card-title">Duplicate Handling</h3>
+          <div class="radio-group">
+            <label class="radio-card">
+              <input type="radio" name="dup" value="skip" checked>
+              <div class="radio-body">
+                <strong>Skip Duplicates</strong>
+                <small>Keep existing records unchanged</small>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="dup" value="update">
+              <div class="radio-body">
+                <strong>Update Duplicates</strong>
+                <small>Overwrite existing with new data</small>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="card" id="preview-card" style="display:none">
+          <div class="card-header">
+            <h3 class="card-title">Preview <span class="badge" id="preview-badge"></span></h3>
+            <small>First 5 rows · first 10 columns</small>
+          </div>
+          <div class="tbl-wrap">
+            <table id="preview-table">
+              <thead id="preview-head"></thead>
+              <tbody id="preview-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="import-actions" style="display:none; margin-bottom:20px">
+          <button class="btn-primary" id="import-btn">Import to Database</button>
+        </div>
+
+        <div class="card" id="progress-card" style="display:none">
+          <div class="prog-header">
+            <span id="prog-label">Importing...</span>
+            <span id="prog-pct">0%</span>
+          </div>
+          <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+          <small id="prog-stats" style="color:var(--muted)"></small>
+        </div>
+
+        <div class="card result-card" id="result-card" style="display:none">
+          <div id="result-icon" style="font-size:48px;margin-bottom:12px"></div>
+          <h3 id="result-title"></h3>
+          <p id="result-msg"></p>
+          <div class="result-stats" id="result-stats"></div>
+          <button class="btn-secondary" id="import-another" style="margin-top:16px">Import Another File</button>
+        </div>
+      </section>
+
+      <!-- ── RECORDS TAB ── -->
+      <section class="tab" id="tab-records">
+        <div class="page-header">
+          <div>
+            <h1>All Records</h1>
+            <p>Browse, search, filter and manage all contacts</p>
+          </div>
+          <span class="badge-lg" id="total-count">–</span>
+        </div>
+
+        <div class="filters-bar">
+          <div class="search-wrap">
+            <span class="search-ico" aria-hidden="true">&#9906;</span>
+            <input type="text" id="search-input" class="search-input" placeholder="Search name, phone, email, address…">
+          </div>
+          <select id="filter-prospect" class="flt-select">
+            <option value="">All Prospect Types</option>
+          </select>
+          <select id="filter-state" class="flt-select">
+            <option value="">All States</option>
+          </select>
+          <select id="filter-stage" class="flt-select">
+            <option value="">All Stages</option>
+          </select>
+          <button class="btn-secondary" id="reset-btn">Reset</button>
+        </div>
+
+        <div class="stats-row" id="stats-row"></div>
+
+        <div class="tbl-card">
+          <div class="tbl-toolbar">
+            <div class="toolbar-left">
+              <span id="showing-text" class="muted-sm"></span>
+              <button class="btn-danger" id="delete-selected-btn" style="display:none">
+                Delete Selected (<span id="selected-count">0</span>)
+              </button>
+            </div>
+            <div class="toolbar-right">
+              <div style="position:relative">
+                <button class="btn-secondary" id="cols-btn">Columns</button>
+                <div class="cols-panel" id="cols-panel" style="display:none">
+                  <strong style="font-size:12px;color:var(--muted);display:block;margin-bottom:10px">VISIBLE COLUMNS</strong>
+                  <div class="cols-grid" id="cols-grid"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table id="records-table">
+              <thead id="rec-head"></thead>
+              <tbody id="rec-body"><tr><td colspan="10" class="empty-cell">Loading…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══ DELETE CONFIRMATION MODAL ═══ -->
+  <div class="modal-overlay" id="delete-modal" style="display:none">
+    <div class="modal">
+      <h2 id="delete-modal-title">Delete Records?</h2>
+      <p id="delete-modal-msg">This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="delete-cancel">Cancel</button>
+        <button class="btn-danger" id="delete-confirm">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETUP MODAL ═══ -->
+  <div class="modal-overlay" id="setup-modal" style="display:none">
+    <div class="modal">
+      <h2>One-Time Database Setup</h2>
+      <p>The <code>contacts</code> table doesn't exist yet. Run the SQL below in your <strong>Supabase SQL Editor</strong>, then refresh.</p>
+      <div class="sql-box" id="setup-sql"></div>
+      <a href="https://supabase.com/dashboard/project/fmspuwcfygbsklgnrray/sql" target="_blank" class="btn-primary" style="display:inline-flex;margin-top:16px;text-decoration:none">Open SQL Editor ↗</a>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
