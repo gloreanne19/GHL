@@ -54,90 +54,51 @@ const SUPABASE_TABLE = 'contacts';
 // Supabase Dashboard → Project Settings → API → "Max Rows"
 // and set it to a number larger than your total contacts count.
 
-// ─────────────────────────────────────────────
-// DB column → human-readable label (for Match Found header)
-// ─────────────────────────────────────────────
-const DB_LABELS = {
-  id:                        'ID',
-  created_date:              'Created',
-  contact_id:                'Contact Id',
-  prospect_type:             'Prospect Type',
-  marketing_stage:           'Marketing Stage of Contact',
-  contact_type:              'Type',
-  full_name:                 'Name',
-  first_name:                'First Name',
-  last_name:                 'Last Name',
-  phone:                     'Phone',
-  email:                     'Email',
-  subject_property_address:  'Subject Property Address',
-  street_address:            'Street address',
-  city:                      'City',
-  state:                     'State',
-  postal_code:               'Postal Code',
-  property_county:           'Property County',
-  mailing_street:            'Mailing Street',
-  mailing_city:              'Mailing City',
-  mailing_state:             'Mailing State',
-  mailing_zipcode:           'Mailing Zipcode',
-  source:                    'Source',
-  auction_date:              'Auction Date',
-  property_type:             'Property Type',
-  house_style:               'House Style',
-  year_built:                'Year Built',
-  square_footage:            'Square Footage',
-  beds:                      'Beds',
-  baths:                     'Baths',
-  pool:                      'Pool',
-  last_sales_date:           'Last Sales Date',
-  deed_date:                 'Deed Date',
-  record_status:             '-- Record - Believed Bad OR Correct OR Deceased --',
-  bad_call_kill:             '4. Bad Call, Kill or NOT A Fit',
-  owner_type:                'Owner Type',
-  retail_score:              'Retail Score',
-  rental_score:              'Rental Score',
-  loan_to_value:             'Loan To Value',
-  loan_balance_15k:          'Loan Balance +15K',
-  original_loan:             'Original Loan',
-  second_poc_name:           'Second POC Name',
-  deceased_owner:            'Deceased Owner',
-  pr_file_date:              'PR File Date',
-  first_date_contact_added:  '1st Date Contact Added',
-  equity_of_property:        'Equity of Property',
-  date_of_death:             'Date of Death',
-  loan_date:                 'Loan Date',
-  foreclosing_lien:          'Foreclosing Lien',
-  complaint_type:            'Complaint Type',
-  ros_offer:                 'ROS OFFER',
-  foreclosures:              'Foreclosures',
-  absentee_owner:            'Absentee Owner',
-  high_equity:               'High Equity',
-  pre_foreclosure:           'Pre-Foreclosure',
-  deceased_probate:          'Deceased Probate',
-  last_sales_price:          'Last Sales Price',
-  recording_date:            'Recording Date',
-  avm:                       'AVM',
-  estimated_value:           'Estimated Value',
-  market_value:              'Market Value',
-  assessed_total:            'Assessed Total',
-  rental_estimate_low:       'Rental Estimate Low',
-  rental_estimate_high:      'Rental Estimate High',
-  total_loans:               'Total Loans',
-  estimated_mortgage_balance:  'Estimated Mortgage Balance',
-  estimated_mortgage_payment:  'Estimated Mortgage Payment',
-  mortgage_interest_rate:    'Mortgage Interest Rate',
-  ltv:                       'LTV',
-  maturity_date:             'Maturity Date',
-  free_and_clear:            'Free And Clear',
-  equity_percent:            'Equity Percent',
-  additional_phones:         'Additional Phones',
-  additional_emails:         'Additional Emails',
-  imported_at:               'Imported At',
-};
+// This will be populated dynamically from Supabase
+let DB_LABELS = {}; 
+let DYNAMIC_SELECT_COLS = '';
+
+/******************************************************
+ * FETCH DYNAMIC SCHEMA
+ ******************************************************/
+function loadDynamicSchema_() {
+  const url = `${SUPABASE_URL}/rest/v1/schema_config?select=excel_header,db_column&is_active=eq.true`;
+  const response = UrlFetchApp.fetch(url, {
+    method: 'get',
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+    },
+    muteHttpExceptions: true
+  });
+
+  if (response.getResponseCode() !== 200) {
+    Logger.log('⚠️ Failed to load dynamic schema, using fallback.');
+    return;
+  }
+
+  const schema = JSON.parse(response.getContentText());
+  const labels = {};
+  const cols = [];
+
+  schema.forEach(s => {
+    labels[s.db_column] = s.excel_header;
+    cols.push(s.db_column);
+  });
+
+  // Always include id and created_at if not in schema
+  if (!cols.includes('id')) cols.push('id');
+  if (!cols.includes('created_date')) cols.push('created_date');
+
+  DB_LABELS = labels;
+  DYNAMIC_SELECT_COLS = cols.join(',');
+}
 
 /******************************************************
  * ENTRY POINT
  ******************************************************/
 function runFullPipeline() {
+  loadDynamicSchema_(); // First, get the latest mapping
   auditRawDataAgainstMasters_();
 }
 
@@ -339,27 +300,8 @@ function auditRawDataAgainstMasters_() {
  ******************************************************/
 function buildMasterBundleFromSupabase_(ui) {
 
-  // Only fetch the columns the pipeline actually needs.
-  // Selecting all 75 columns × 50k rows causes a statement timeout on Supabase free tier.
-  const SELECT_COLS = [
-    'contact_id',
-    'street_address',
-    'subject_property_address',
-    'postal_code',
-    'prospect_type',
-    'full_name',
-    'first_name',
-    'last_name',
-    'phone',
-    'email',
-    'city',
-    'state',
-    'marketing_stage',
-    'contact_type',
-    'source',
-    'property_county',
-    'created_date',
-  ].join(',');
+  // Use the dynamic column list loaded from schema_config
+  const SELECT_COLS = DYNAMIC_SELECT_COLS || 'contact_id,full_name,phone,email,prospect_type,street_address,postal_code';
 
   const BATCH = 5000;  // rows per request — fast enough to stay under the 8s timeout
 

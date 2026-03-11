@@ -29,9 +29,7 @@
           <input type="password" id="login-password" class="field-input" placeholder="••••••••" required>
         </div>
         <div class="login-error" id="login-error" style="display:none"></div>
-        <button type="submit" class="btn-primary login-btn" id="login-btn">
-          Sign In
-        </button>
+        <button type="submit" class="btn-primary login-btn" id="login-btn">Sign In</button>
       </form>
     </div>
   </div>
@@ -39,7 +37,7 @@
   <!-- ═══════════════════ MAIN APP ═══════════════════ -->
   <div class="app" id="main-app" style="display:none">
 
-    <!-- Sidebar -->
+    <!-- ─── SIDEBAR ─── -->
     <aside class="sidebar">
       <div class="logo">
         <div class="logo-icon">GHL</div>
@@ -48,15 +46,63 @@
           <div class="logo-sub">Lead Database</div>
         </div>
       </div>
+
       <nav class="nav">
         <button class="nav-item active" data-tab="import" id="nav-import">
-          Import Data
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 2a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 11.586V3a1 1 0 011-1z"/>
+            <path d="M3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+          </svg>
+          <span class="nav-label">Import Data</span>
         </button>
+
+        <button class="nav-item" data-tab="errors" id="nav-errors" style="display:none">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+          <span class="nav-label">Import Errors</span>
+          <span class="err-count" id="err-count">0</span>
+        </button>
+
         <button class="nav-item" data-tab="records" id="nav-records">
-          All Records
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+          </svg>
+          <span class="nav-label">All Records</span>
+        </button>
+
+        <button class="nav-item" data-tab="history" id="nav-history">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+          </svg>
+          <span class="nav-label">Import History</span>
+        </button>
+
+        <button class="nav-item" data-tab="schema" id="nav-schema">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+          </svg>
+          <span class="nav-label">Schema Manager</span>
+        </button>
+
+        <button class="nav-item" data-tab="users" id="nav-users">
+          <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+          </svg>
+          <span class="nav-label">User Accounts</span>
         </button>
       </nav>
+
       <div class="sidebar-footer">
+        <!-- Logged-in user card -->
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04);margin-bottom:8px">
+          <div id="sidebar-user-avatar" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#34d399,#059669);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">?</div>
+          <div style="min-width:0;flex:1">
+            <div id="sidebar-user-email" style="font-size:12px;color:#cbd5e1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Loading...</div>
+            <div id="sidebar-user-role" style="font-size:10px;font-weight:600;margin-top:1px;text-transform:capitalize">user</div>
+          </div>
+        </div>
         <div class="user-info">
           <span class="status-dot" id="status-dot"></span>
           <span id="status-text">Connecting...</span>
@@ -65,7 +111,7 @@
       </div>
     </aside>
 
-    <!-- Main -->
+    <!-- ─── MAIN ─── -->
     <main class="main">
 
       <!-- ── IMPORT TAB ── -->
@@ -76,76 +122,99 @@
             <p>Upload your .xlsx / .xls / .csv to add contacts to the database</p>
           </div>
         </div>
-
-        <div class="dropzone" id="dropzone">
-          <div class="drop-icon">+</div>
-          <h3>Drop your file here</h3>
-          <p>or click to browse</p>
-          <span class="drop-hint">.xlsx &nbsp;·&nbsp; .xls &nbsp;·&nbsp; .csv</span>
-          <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden>
-        </div>
-
-        <div class="file-bar" id="file-bar" style="display:none">
-          <div class="file-bar-icon"></div>
-          <div class="file-bar-info">
-            <strong id="file-name"></strong>
-            <span id="file-meta"></span>
+        <div class="tab-body" id="import-tab-body" style="overflow-y:auto">
+          <div class="dropzone" id="dropzone">
+            <div class="drop-icon">+</div>
+            <h3>Drop your file here</h3>
+            <p>or click to browse</p>
+            <span class="drop-hint">.xlsx &nbsp;·&nbsp; .xls &nbsp;·&nbsp; .csv</span>
+            <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden>
           </div>
-          <button class="icon-btn" id="remove-file" title="Remove file">×</button>
-        </div>
 
-        <div class="card" id="import-options" style="display:none">
-          <h3 class="card-title">Duplicate Handling</h3>
-          <div class="radio-group">
-            <label class="radio-card">
-              <input type="radio" name="dup" value="skip" checked>
-              <div class="radio-body">
-                <strong>Skip Duplicates</strong>
-                <small>Keep existing records unchanged</small>
-              </div>
-            </label>
-            <label class="radio-card">
-              <input type="radio" name="dup" value="update">
-              <div class="radio-body">
-                <strong>Update Duplicates</strong>
-                <small>Overwrite existing with new data</small>
-              </div>
-            </label>
+          <div class="file-bar" id="file-bar" style="display:none">
+            <div class="file-bar-icon"></div>
+            <div class="file-bar-info">
+              <strong id="file-name"></strong>
+              <span id="file-meta"></span>
+            </div>
+            <button class="icon-btn" id="remove-file" title="Remove file">×</button>
+          </div>
+
+          <div class="card" id="import-options" style="display:none">
+            <h3 class="card-title">Duplicate Handling</h3>
+            <div class="radio-group">
+              <label class="radio-card">
+                <input type="radio" name="dup" value="skip" checked>
+                <div class="radio-body">
+                  <strong>Skip Duplicates</strong>
+                  <small>Keep existing records unchanged</small>
+                </div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="dup" value="update">
+                <div class="radio-body">
+                  <strong>Update Duplicates</strong>
+                  <small>Overwrite existing with new data</small>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="card" id="preview-card" style="display:none">
+            <div class="card-header">
+              <h3 class="card-title" style="margin:0">Preview <span class="badge" id="preview-badge"></span></h3>
+              <small style="color:var(--muted)">First 5 rows · first 10 columns</small>
+            </div>
+            <div class="tbl-wrap">
+              <table id="preview-table">
+                <thead id="preview-head"></thead>
+                <tbody id="preview-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="import-actions" style="display:none">
+            <button class="btn-primary" id="import-btn">Import to Database</button>
+          </div>
+
+          <div class="card" id="progress-card" style="display:none">
+            <div class="prog-header">
+              <span id="prog-label">Importing...</span>
+              <span id="prog-pct">0%</span>
+            </div>
+            <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+            <small id="prog-stats" style="color:var(--muted);display:block;margin-top:8px"></small>
+          </div>
+
+          <div class="card result-card" id="result-card" style="display:none">
+            <div id="result-icon" style="font-size:48px;margin-bottom:12px"></div>
+            <h3 id="result-title"></h3>
+            <p id="result-msg" style="color:var(--muted);margin-top:6px"></p>
+            <div class="result-stats" id="result-stats"></div>
+            <div style="display:flex;gap:12px;justify-content:center;margin-top:20px">
+              <button class="btn-secondary" id="import-another">Import Another File</button>
+              <button class="btn-primary" id="view-errors-btn" style="display:none">Review Failures</button>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div class="card" id="preview-card" style="display:none">
-          <div class="card-header">
-            <h3 class="card-title">Preview <span class="badge" id="preview-badge"></span></h3>
-            <small>First 5 rows · first 10 columns</small>
+      <!-- ── ERRORS TAB ── -->
+      <section class="tab" id="tab-errors">
+        <div class="page-header">
+          <div>
+            <h1>Import Failures</h1>
+            <p>Review and correct rows that encountered errors during import</p>
           </div>
+          <button class="btn-primary" id="retry-import-btn">Retry All Corrections</button>
+        </div>
+        <div class="tbl-card">
           <div class="tbl-wrap">
-            <table id="preview-table">
-              <thead id="preview-head"></thead>
-              <tbody id="preview-body"></tbody>
+            <table id="errors-table">
+              <thead id="err-head"></thead>
+              <tbody id="err-body"></tbody>
             </table>
           </div>
-        </div>
-
-        <div id="import-actions" style="display:none; margin-bottom:20px">
-          <button class="btn-primary" id="import-btn">Import to Database</button>
-        </div>
-
-        <div class="card" id="progress-card" style="display:none">
-          <div class="prog-header">
-            <span id="prog-label">Importing...</span>
-            <span id="prog-pct">0%</span>
-          </div>
-          <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
-          <small id="prog-stats" style="color:var(--muted)"></small>
-        </div>
-
-        <div class="card result-card" id="result-card" style="display:none">
-          <div id="result-icon" style="font-size:48px;margin-bottom:12px"></div>
-          <h3 id="result-title"></h3>
-          <p id="result-msg"></p>
-          <div class="result-stats" id="result-stats"></div>
-          <button class="btn-secondary" id="import-another" style="margin-top:16px">Import Another File</button>
         </div>
       </section>
 
@@ -187,15 +256,13 @@
               <button class="btn-danger" id="delete-selected-btn" style="display:none">
                 Delete Selected (<span id="selected-count">0</span>)
               </button>
-              <button class="btn-danger" id="mass-delete-btn" style="margin-left: 10px; opacity: 0.9;">
-                Mass Delete
-              </button>
+              <button class="btn-danger" id="mass-delete-btn">Mass Delete</button>
             </div>
             <div class="toolbar-right">
               <div style="position:relative">
-                <button class="btn-secondary" id="cols-btn">Columns</button>
+                <button class="btn-secondary" id="cols-btn">⊞ Columns</button>
                 <div class="cols-panel" id="cols-panel" style="display:none">
-                  <strong style="font-size:12px;color:var(--muted);display:block;margin-bottom:10px">VISIBLE COLUMNS</strong>
+                  <strong style="font-size:11px;color:var(--muted);display:block;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Visible Columns</strong>
                   <div class="cols-grid" id="cols-grid"></div>
                 </div>
               </div>
@@ -211,6 +278,99 @@
         </div>
       </section>
 
+      <!-- ── IMPORT HISTORY TAB ── -->
+      <section class="tab" id="tab-history">
+        <div class="page-header">
+          <div>
+            <h1>Import History</h1>
+            <p>Track all past data imports — who imported, when, and what file was used</p>
+          </div>
+          <button class="btn-secondary" id="refresh-history-btn">↻ Refresh</button>
+        </div>
+        <div class="tbl-card">
+          <div class="tbl-wrap">
+            <table id="history-table">
+              <thead>
+                <tr>
+                  <th>Date &amp; Time</th>
+                  <th>Imported By</th>
+                  <th>File Name</th>
+                  <th>Total Rows</th>
+                  <th>Imported</th>
+                  <th>Errors</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="history-body">
+                <tr><td colspan="8" class="empty-cell">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SCHEMA TAB ── -->
+      <section class="tab" id="tab-schema">
+        <div class="page-header">
+          <div>
+            <h1>Schema Manager</h1>
+            <p>Configure how Excel headers map to database columns</p>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn-secondary" id="add-mapping-btn">+ Add Row</button>
+            <button class="btn-primary" id="save-schema-btn">Save Configuration</button>
+          </div>
+        </div>
+        <div class="schema-wrap">
+          <div class="tbl-card">
+            <div class="tbl-wrap">
+              <table id="schema-table">
+                <thead>
+                  <tr>
+                    <th>Excel Header</th>
+                    <th>Database Column</th>
+                    <th>Type</th>
+                    <th>Active</th>
+                    <th>Delete</th>
+                  </tr>
+                </thead>
+                <tbody id="schema-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── USERS TAB ── -->
+      <section class="tab" id="tab-users">
+        <div class="page-header">
+          <div>
+            <h1>User Accounts</h1>
+            <p>Manage who can access the system</p>
+          </div>
+          <button class="btn-primary" id="add-user-btn">+ Add User</button>
+        </div>
+        <div class="tbl-card">
+          <div class="tbl-wrap">
+            <table id="users-table">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Created</th>
+                  <th>Last Sign In</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-body">
+                <tr><td colspan="4" class="empty-cell">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -219,8 +379,8 @@
     <div class="modal">
       <h2 id="delete-modal-title">Delete Records?</h2>
       <p id="delete-modal-msg">This action cannot be undone.</p>
-      <div id="mass-delete-warning" style="display:none; background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.35); color: #fca5a5; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 13px;">
-         You are about to delete records matching your current filter. This might take a few moments for large numbers of records.
+      <div id="mass-delete-warning" style="display:none; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.3); color:#ef4444; padding:12px; border-radius:8px; margin-bottom:16px; font-size:13px;">
+        You are about to delete records matching your current filter. This might take a few moments.
       </div>
       <div class="modal-actions">
         <button class="btn-secondary" id="delete-cancel">Cancel</button>
@@ -232,11 +392,73 @@
 
   <!-- ═══ SETUP MODAL ═══ -->
   <div class="modal-overlay" id="setup-modal" style="display:none">
-    <div class="modal">
-      <h2>One-Time Database Setup</h2>
-      <p>The <code>contacts</code> table doesn't exist yet. Run the SQL below in your <strong>Supabase SQL Editor</strong>, then refresh.</p>
+    <div class="modal" style="max-width:700px">
+      <h2>Database Setup Required</h2>
+      <p>Please run the SQL below in your <strong>Supabase SQL Editor</strong> to enable dynamic schema and configuration.</p>
       <div class="sql-box" id="setup-sql"></div>
-      <a href="https://supabase.com/dashboard/project/fmspuwcfygbsklgnrray/sql" target="_blank" class="btn-primary" style="display:inline-flex;margin-top:16px;text-decoration:none">Open SQL Editor ↗</a>
+      <div style="display:flex;gap:12px;margin-top:20px">
+        <a href="https://supabase.com/dashboard/project/fmspuwcfygbsklgnrray/sql" target="_blank" class="btn-primary" style="text-decoration:none">Open SQL Editor ↗</a>
+        <button class="btn-secondary" onclick="document.getElementById('setup-modal').style.display='none'">Already done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ NEW COLUMN MODAL ═══ -->
+  <div class="modal-overlay" id="new-col-modal" style="display:none">
+    <div class="modal">
+      <h2>New Column Detected</h2>
+      <p>The column <strong id="new-col-name"></strong> was found in your file but doesn't exist in the database.</p>
+      <div class="field-group">
+        <label class="field-label">Database Column Name (Lowercase, no spaces)</label>
+        <input type="text" id="new-col-db-name" class="field-input">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="new-col-skip">Skip Column</button>
+        <button class="btn-primary" id="new-col-add">Add to Database</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ USER MODAL (Add / Edit) ═══ -->
+  <div class="modal-overlay" id="user-modal" style="display:none">
+    <div class="modal">
+      <h2 id="user-modal-title">Add User</h2>
+      <div class="field-group" style="margin-bottom:14px">
+        <label class="field-label">Email Address</label>
+        <input type="email" id="user-modal-email" class="field-input" placeholder="user@example.com">
+      </div>
+      <div class="field-group" style="margin-bottom:14px">
+        <label class="field-label">Password <span style="color:var(--muted);font-size:11px">(leave blank to keep existing)</span></label>
+        <input type="password" id="user-modal-password" class="field-input" placeholder="New password">
+      </div>
+      <div class="field-group" style="margin-bottom:14px">
+        <label class="field-label">Role</label>
+        <select id="user-modal-role" class="field-input" style="cursor:pointer">
+          <option value="user">User — Standard access</option>
+          <option value="admin">Admin — Full access including User Management</option>
+        </select>
+      </div>
+      <input type="hidden" id="user-modal-id">
+      <div class="modal-actions">
+        <button class="btn-secondary" id="user-modal-cancel">Cancel</button>
+        <button class="btn-primary" id="user-modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ IMPORT PREVIEW MODAL ═══ -->
+  <div class="modal-overlay" id="history-preview-modal" style="display:none">
+    <div class="modal" style="max-width:900px;width:95vw">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 id="history-preview-title">Import Preview</h2>
+        <button class="btn-secondary" onclick="document.getElementById('history-preview-modal').style.display='none'">✕ Close</button>
+      </div>
+      <div class="tbl-wrap" style="max-height:60vh;overflow:auto">
+        <table id="history-preview-table">
+          <thead id="history-preview-head"></thead>
+          <tbody id="history-preview-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
