@@ -648,6 +648,109 @@ window.filterByProspect = function(pt) {
 };
 
 // ─────────────────────────────────────────────
+// EXPORT TO EXCEL
+// ─────────────────────────────────────────────
+async function exportToExcel() {
+  const btn   = document.getElementById('export-btn');
+  const BATCH = 1000;
+
+  // Inject progress bar under button once
+  let progBar = document.getElementById('export-prog-bar');
+  if (!progBar) {
+    progBar = document.createElement('div');
+    progBar.id = 'export-prog-bar';
+    progBar.style.cssText = 'height:3px;border-radius:3px;background:var(--border);margin-top:6px;overflow:hidden;display:none;width:100%';
+    progBar.innerHTML = '<div id="export-prog-fill" style="height:100%;width:0%;background:var(--accent);border-radius:3px;transition:width .25s ease"></div>';
+    btn.insertAdjacentElement('afterend', progBar);
+  }
+  const setP = (pct, label) => {
+    btn.textContent = `${label}… ${pct}%`;
+    document.getElementById('export-prog-fill').style.width = pct + '%';
+    progBar.style.display = 'block';
+  };
+
+  btn.disabled = true;
+  setP(0, 'Starting');
+
+  try {
+    const activeSchema = SCHEMA.filter(s => s.is_active);
+
+    // Step 1: count
+    setP(2, 'Counting');
+    let cq = db.from(TABLE).select('id', { count: 'exact', head: true });
+    if (filters.prospect) cq = cq.eq('prospect_type', filters.prospect);
+    if (filters.state)    cq = cq.eq('state', filters.state);
+    if (filters.stage)    cq = cq.eq('marketing_stage', filters.stage);
+    if (filters.q) { const s = filters.q; cq = cq.or(`full_name.ilike.%${s}%,phone.ilike.%${s}%,email.ilike.%${s}%,street_address.ilike.%${s}%,city.ilike.%${s}%,contact_id.ilike.%${s}%`); }
+    if (filters.dStart) cq = cq.gte('imported_at', filters.dStart + 'T00:00:00.000Z');
+    if (filters.dEnd)   cq = cq.lte('imported_at', filters.dEnd   + 'T23:59:59.999Z');
+    const { count, error: cErr } = await cq;
+    if (cErr) throw cErr;
+    if (!count) { toast('No records to export.', 'error'); return; }
+
+    // Step 2: fetch in batches
+    const totalBatches = Math.ceil(count / BATCH);
+    let allData = [];
+    for (let i = 0; i < totalBatches; i++) {
+      const from = i * BATCH; const to = from + BATCH - 1;
+      const fetched = Math.min((i + 1) * BATCH, count);
+      setP(Math.round(5 + (i / totalBatches) * 75), `Fetching ${fetched.toLocaleString()} / ${count.toLocaleString()}`);
+      let bq = db.from(TABLE).select('*').order('id', { ascending: false }).range(from, to);
+      if (filters.prospect) bq = bq.eq('prospect_type', filters.prospect);
+      if (filters.state)    bq = bq.eq('state', filters.state);
+      if (filters.stage)    bq = bq.eq('marketing_stage', filters.stage);
+      if (filters.q) { const s = filters.q; bq = bq.or(`full_name.ilike.%${s}%,phone.ilike.%${s}%,email.ilike.%${s}%,street_address.ilike.%${s}%,city.ilike.%${s}%,contact_id.ilike.%${s}%`); }
+      if (filters.dStart) bq = bq.gte('imported_at', filters.dStart + 'T00:00:00.000Z');
+      if (filters.dEnd)   bq = bq.lte('imported_at', filters.dEnd   + 'T23:59:59.999Z');
+      const { data: batch, error: bErr } = await bq;
+      if (bErr) throw bErr;
+      allData = allData.concat(batch || []);
+    }
+
+    // Step 3: map to Excel headers
+    setP(82, 'Building');
+    await new Promise(r => setTimeout(r, 0));
+    const rows = allData.map(row => {
+      const out = {};
+      activeSchema.forEach(s => { out[s.excel_header] = row[s.db_column] ?? ''; });
+      return out;
+    });
+
+    // Step 4: create xlsx
+    setP(92, 'Writing');
+    await new Promise(r => setTimeout(r, 0));
+    const ws = XLSX.utils.json_to_sheet(rows, { header: activeSchema.map(s => s.excel_header) });
+    ws['!cols'] = activeSchema.map(s => ({ wch: Math.max(s.excel_header.length, 14) }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'GHL All Records');
+
+    setP(98, 'Saving');
+    await new Promise(r => setTimeout(r, 80));
+
+    const now = new Date();
+    const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    XLSX.writeFile(wb, `GHL_Records_${stamp}.xlsx`);
+
+    setP(100, 'Done!');
+    toast(`Exported ${allData.length.toLocaleString()} records`, 'success');
+
+  } catch (e) {
+    toast('Export error: ' + e.message, 'error');
+  } finally {
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '\u2b07 Export Excel';
+      progBar.style.display = 'none';
+      document.getElementById('export-prog-fill').style.width = '0%';
+    }, 2000);
+  }
+}
+
+document.getElementById('export-btn').addEventListener('click', exportToExcel);
+
+
+
+// ─────────────────────────────────────────────
 // DELETE
 // ─────────────────────────────────────────────
 function updateDeleteBtn() {
