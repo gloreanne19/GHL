@@ -77,33 +77,42 @@ function showLogin() {
 async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('main-app').style.display = 'flex';
-  await connectDB();
-  await loadCurrentUser();
-  await loadSchema();
+  try { await connectDB(); } catch(e) { console.warn('connectDB error:', e); }
+  try { await loadCurrentUser(); } catch(e) { console.warn('loadCurrentUser error:', e); }
+  try { await loadSchema(); } catch(e) { console.warn('loadSchema error:', e); }
 }
 
 async function loadCurrentUser() {
   const { data: { user } } = await db.auth.getUser();
   if (!user) return;
 
-  // Get role
-  const { data: role } = await db.rpc('get_my_role');
-  currentUserRole = role || 'user';
+  // Try to get role from RPC, fall back to raw_app_meta_data, then default to 'user'
+  let role = 'user';
+  try {
+    const { data: rpcRole, error } = await db.rpc('get_my_role');
+    if (!error && rpcRole) role = rpcRole;
+  } catch (_) {
+    // RPC not created yet — fall back silently
+    role = 'user';
+  }
+  currentUserRole = role;
 
   // Display user in sidebar
-  const email    = user.email || '';
-  const initials = email.charAt(0).toUpperCase();
-  const roleLbl  = currentUserRole === 'admin' ? 'Admin' : 'User';
+  const email     = user.email || '';
+  const initials  = email.charAt(0).toUpperCase() || '?';
+  const roleLbl   = currentUserRole === 'admin' ? 'Admin' : 'User';
   const roleColor = currentUserRole === 'admin' ? 'var(--accent-dark)' : 'var(--muted)';
 
-  document.getElementById('sidebar-user-avatar').textContent   = initials;
-  document.getElementById('sidebar-user-email').textContent    = email;
-  document.getElementById('sidebar-user-role').textContent     = roleLbl;
-  document.getElementById('sidebar-user-role').style.color     = roleColor;
+  const avatarEl = document.getElementById('sidebar-user-avatar');
+  const emailEl  = document.getElementById('sidebar-user-email');
+  const roleEl   = document.getElementById('sidebar-user-role');
+  if (avatarEl) avatarEl.textContent = initials;
+  if (emailEl)  emailEl.textContent  = email;
+  if (roleEl)  { roleEl.textContent  = roleLbl; roleEl.style.color = roleColor; }
 
   // Access control: hide User Accounts nav for non-admins
   const usersNav = document.getElementById('nav-users');
-  usersNav.style.display = currentUserRole === 'admin' ? 'flex' : 'none';
+  if (usersNav) usersNav.style.display = currentUserRole === 'admin' ? 'flex' : 'none';
 }
 
 async function loadSchema() {
